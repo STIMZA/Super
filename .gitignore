@@ -2,8 +2,8 @@
 *.d
 *.ex4
 *.log
-/.gitignore
-/.idea/
+**.gitignore
+**/.idea
 
 # Compiled Object files
 *.slo

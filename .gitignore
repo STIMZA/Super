@@ -6,6 +6,8 @@
 *.lo
 *.o
 *.obj
+*.ex4
+*.log
 
 # Precompiled Headers
 *.gch

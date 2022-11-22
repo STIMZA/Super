@@ -1,13 +1,15 @@
 # Prerequisites
 *.d
+*.ex4
+*.log
+*.gitignore
+/.idea
 
 # Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
-*.ex4
-*.log
 
 # Precompiled Headers
 *.gch

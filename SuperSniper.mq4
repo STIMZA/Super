@@ -1,6 +1,9 @@
 
 #include <sqlite.mqh>
 #include <ChartBeautify.mqh>
+#include <FileLog.mqh>
+
+CFileLog *logger;
 
 int OnInit(){
    ChartBackColorSet(clrWhite);
@@ -20,21 +23,37 @@ int OnInit(){
    ChartShowPeriodSepapatorSet(false);
    ChartShowGridSet(false);
 
+   logger=new CFileLog("SuperSniper.log",TRACE,true);
+
+   //logger.Write("Write message to log with no log level");
+   //logger.Debug("Write Debug message to log");
+   //logger.Warning("Write Warning message to log");
+   //logger.Info("Write Info message to log");
+   //logger.Error(StringFormat("Write Error message to log. Error at line %d",__LINE__));
+   //logger.Critical("Write Critical message to log");
+
    if (!sqlite_init()) {
       return INIT_FAILED;
    }
-   
+
+   logger.Trace("--------- Initialization of SuperSniper EA completed.");
+
    return INIT_SUCCEEDED;
 }
 
 void OnDeinit(const int reason){
+   logger.Info(StringFormat("DeInitialising %d",reason));
+   delete logger; // delete Chart Display
    sqlite_finalize();
 }
 
 int start(){
+    static int lastBar=0;
+    if(lastBar!=Bars){
+        logger.Info(StringFormat("New Bar on Chart. Number of bars count in the history = %d",Bars));
+        lastBar=Bars;
+    }
 
-
-   
    return 0;
 }
 

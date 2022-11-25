@@ -11,6 +11,7 @@ int OnInit(){
     //##################################################################################################################
 
     logger.Trace("--------- Begin initialization of SuperSniper EA.");
+
     ChartBackColorSet(clrWhite);
     ChartForeColorSet(clrBlack);
     ChartUpColorSet(clrBlack);
@@ -29,6 +30,7 @@ int OnInit(){
     ChartShowGridSet(false);
 
    //logger.Write("Write message to log with no log level");
+   //logger.Trace("--------- Write Trace message to log.");
    //logger.Debug("Write Debug message to log");
    //logger.Warning("Write Warning message to log");
    //logger.Info("Write Info message to log");
@@ -41,6 +43,7 @@ int OnInit(){
     logger.Trace("--------- End initialization of SuperSniper EA.");
 
     //##################################################################################################################
+    
     return INIT_SUCCEEDED;
 }
 
@@ -51,47 +54,174 @@ void OnDeinit(const int reason){
 }
 
 int start(){
+    string database = "SuperSniper.db";
+    int monthId = 0;
+    string monthName = "";
+    int dayOfMonthId = 0;
+    string dayOfMonthName = "";
+    int dayOfWeekId = 0;
+    string dayOfWeekName = "";
+    int hourOfDayId = 0;
+    string hourOfDayName = "";
+    int minuteOfHourId = 0;
+    string minuteOfHourName = "";
+    
+    if (!do_check_table_exists (database, "months")) {
+        do_exec (database, "create table months (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "month)");
+    }
+    
+    if (!do_check_table_exists (database, "daysOfMonth")) {
+        do_exec (database, "create table daysOfMonth (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "day)");
+    }
+    
+    if (!do_check_table_exists (database, "daysOfWeek")) {
+        do_exec (database, "create table daysOfWeek (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "day)");
+    }
+    
+    if (!do_check_table_exists (database, "hoursOfDay")) {
+        do_exec (database, "create table hoursOfDay (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "hour)");
+    }
+    
+    if (!do_check_table_exists (database, "minutesOfHour")) {
+        do_exec (database, "create table minutesOfHour (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," +
+                           "minute)");
+    }
+      
+    int months_cols[2],  daysOfMonth_cols[2], daysOfWeek_cols[2], hoursOfDay_cols[2],  minutesOfHour_cols[2],
+        secondsOfMinute_cols[2];
+   
+    int months_handle = sqlite_query (database, "select * from months", months_cols);
+    int daysOfMonth_handle = sqlite_query (database, "select * from daysOfMonth", daysOfMonth_cols);
+    int daysOfWeek_handle = sqlite_query (database, "select * from daysOfWeek", daysOfWeek_cols);
+    int hoursOfDay_handle = sqlite_query (database, "select * from hoursOfDay", hoursOfDay_cols);
+    int minutesOfHour_handle = sqlite_query (database, "select * from minutesOfHour", minutesOfHour_cols);
+    
+    while (sqlite_next_row (months_handle) == 1) {
+        monthId = sqlite_get_col(months_handle, 0);
+        monthName = sqlite_get_col(months_handle, 1);
+        if(Month() == monthId){
+            break;
+        }
+    }    
+    sqlite_free_query (months_handle);
+    
+    while (sqlite_next_row (daysOfMonth_handle) == 1) {    
+        dayOfMonthId = sqlite_get_col(daysOfMonth_handle, 0);
+        dayOfMonthName = sqlite_get_col(daysOfMonth_handle, 1);        
+        if(Day() == dayOfMonthId){
+            break;
+        }
+    }    
+    sqlite_free_query (daysOfMonth_handle);
+    
+    while (sqlite_next_row (daysOfWeek_handle) == 1) {    
+        dayOfWeekId = sqlite_get_col(daysOfWeek_handle, 0);
+        dayOfWeekName = sqlite_get_col(daysOfWeek_handle, 1);        
+        if(Day() == dayOfWeekId){
+            break;
+        }
+    }    
+    sqlite_free_query (daysOfWeek_handle);
+    
+    while (sqlite_next_row (hoursOfDay_handle) == 1) {
+        hourOfDayId = sqlite_get_col(hoursOfDay_handle, 0);
+        hourOfDayName = sqlite_get_col(hoursOfDay_handle, 1);
+        if(Hour() == hourOfDayId){
+            break;
+        }
+    }    
+    sqlite_free_query (hoursOfDay_handle);
+    
+    while (sqlite_next_row (minutesOfHour_handle) == 1) {    
+        minuteOfHourId = sqlite_get_col(minutesOfHour_handle, 0);
+        minuteOfHourName = sqlite_get_col(minutesOfHour_handle, 1);        
+        if(Minute() == minuteOfHourId){
+            break;
+        }
+    }    
+    sqlite_free_query (minutesOfHour_handle);
+    
     static int lastBar=0;
     if(lastBar!=Bars){
+        logger.Trace("--------- Begin Per/Bar information.");
         logger.Info(StringFormat("A new bar has printed. Historical bars = %d",Bars));
+        
         //##############################################################################################################
 
         if(DayOfYear() >= 7 && DayOfYear() <= 355){
-            logger.Trace(StringFormat("Operational day of the year. day = %d",DayOfYear()));
+            logger.Info(StringFormat("Operational day of the year = %d",DayOfYear()));
+            
+            ENUM_TIMEFRAMES period = ChartPeriod(0);
+            string timeFrame = "";
+            
+            if(period == PERIOD_M1){
+               timeFrame = "M1";
+            }else if(period == PERIOD_M5){
+               timeFrame = "M5";
+            }else if(period == PERIOD_M15){
+               timeFrame = "M15";
+            }else if(period == PERIOD_M30){
+               timeFrame = "M30";
+            }else if(period == PERIOD_H1){
+               timeFrame = "H1";
+            }else if(period == PERIOD_H4){
+               timeFrame = "H4";
+            }else if(period == PERIOD_D1){
+               timeFrame = "D1";
+            }else if(period == PERIOD_W1){
+               timeFrame = "W1";
+            }else if(period == PERIOD_MN1){
+               timeFrame = "MN1";
+            }
+            
+            logger.Info(StringFormat("Chart time frame = %s",timeFrame));
+            logger.Info("Machine time = " + TimeToString(TimeLocal()));
+            logger.Info("Server time = " + TimeToString(TimeCurrent()));
+            
+            logger.Info(StringFormat("Year = %d",Year()));
+                        
+            if(Month() == monthId){
+                logger.Info(StringFormat("Month = %d",monthId) + " (" + monthName + ")");
+                
+                if(Day() == dayOfMonthId){
+                    logger.Info(StringFormat("Date = %d",Day()));
 
-            if(Month() == 1){
-                logger.Info(StringFormat("January. Month = %d",Month()));
-            }else if(Month() == 2){
-                logger.Info(StringFormat("February. Month = %d",Month()));
-            }else if(Month() == 3){
-                logger.Info(StringFormat("March. Month = %d",Month()));
-            }else if(Month() == 4){
-                logger.Info(StringFormat("April. Month = %d",Month()));
-            }else if(Month() == 5){
-                logger.Info(StringFormat("May. Month = %d",Month()));
-            }else if(Month() == 6){
-                logger.Info(StringFormat("June. Month = %d",Month()));
-            }else if(Month() == 7){
-                logger.Info(StringFormat("July. Month = %d",Month()));
-            }else if(Month() == 8){
-                logger.Info(StringFormat("August. Month = %d",Month()));
-            }else if(Month() == 9){
-                logger.Info(StringFormat("September. Month = %d",Month()));
-            }else if(Month() == 10){
-                logger.Info(StringFormat("October. Month = %d",Month()));
-            }else if(Month() == 11){
-                logger.Info(StringFormat("November. Month = %d",Month()));
-            }else if(Month() == 12){
-                logger.Info(StringFormat("December. Month = %d",Month()));
+                    if(DayOfWeek() == dayOfWeekId){
+                        logger.Info(StringFormat("Day of week = %d",DayOfWeek()));
+
+                        if(Hour() == hourOfDayId){
+                            logger.Info(StringFormat("Hour of day = %d",Hour()));
+
+                            if(Minute() == minuteOfHourId){
+                                logger.Info(StringFormat("Minute of Hour = %d",Minute()));
+                                
+                            }else{
+                                logger.Error(StringFormat("Unable to determine the minute of hour. Error at line %d",
+                                                           __LINE__));
+                            }
+                        }else{
+                            logger.Error(StringFormat("Unable to determine the hour of day. Error at line %d",
+                                                       __LINE__));
+                        }
+                    }
+                }else{
+                    logger.Error(StringFormat("Unable to determine the day of month. Error at line %d",__LINE__));
+                }
+            }else{
+                logger.Error(StringFormat("Unable to determine the month of year. Error at line %d",__LINE__) + " " +
+                                                                                                    monthName);
             }
 
         }else{
-            logger.Info(
+            logger.Warning(
             "Holiday season. A time to reflect and startegise, system resumption will be on the 7th of Jan.");
         }
 
         //##############################################################################################################
+        
         lastBar=Bars;
+
+        logger.Trace("--------- End Per/Bar information.");
     }
     return 0;
 }

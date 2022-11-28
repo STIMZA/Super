@@ -142,8 +142,9 @@ int start(){
     
     static int lastBar=0;
     if(lastBar!=Bars){
-        logger.Trace("--------- Begin Per/Bar information.");
+        logger.Trace("--------- Begin Per/Bar information.");        
         logger.Info(StringFormat("A new bar has printed. Historical bars = %d",Bars));
+        logger.Info(StringFormat("Symbol = %s",_Symbol));
         
         //##############################################################################################################
 

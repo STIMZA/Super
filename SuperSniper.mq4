@@ -59,12 +59,12 @@ int start(){
     string monthName = "";
     int dayOfMonthId = 0;
     string dayOfMonthName = "";
-    int dayOfWeekId = 0;
-    string dayOfWeekName = "";
     int hourOfDayId = 0;
     string hourOfDayName = "";
     int minuteOfHourId = 0;
     string minuteOfHourName = "";
+    int dayOfWeekId = 0;
+    string dayOfWeekName = "";
     
     if (!do_check_table_exists (database, "months")) {
         do_exec (database, "create table months (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "month)");
@@ -73,11 +73,7 @@ int start(){
     if (!do_check_table_exists (database, "daysOfMonth")) {
         do_exec (database, "create table daysOfMonth (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "day)");
     }
-    
-    if (!do_check_table_exists (database, "daysOfWeek")) {
-        do_exec (database, "create table daysOfWeek (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "day)");
-    }
-    
+        
     if (!do_check_table_exists (database, "hoursOfDay")) {
         do_exec (database, "create table hoursOfDay (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "hour)");
     }
@@ -86,15 +82,18 @@ int start(){
         do_exec (database, "create table minutesOfHour (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," +
                            "minute)");
     }
+    
+    if (!do_check_table_exists (database, "daysOfWeek")) {
+        do_exec (database, "create table daysOfWeek (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," + "day)");
+    }
       
-    int months_cols[2],  daysOfMonth_cols[2], daysOfWeek_cols[2], hoursOfDay_cols[2],  minutesOfHour_cols[2],
-        secondsOfMinute_cols[2];
+    int months_cols[2],  daysOfMonth_cols[2], hoursOfDay_cols[2],  minutesOfHour_cols[2], daysOfWeek_cols[2];
    
     int months_handle = sqlite_query (database, "select * from months", months_cols);
     int daysOfMonth_handle = sqlite_query (database, "select * from daysOfMonth", daysOfMonth_cols);
-    int daysOfWeek_handle = sqlite_query (database, "select * from daysOfWeek", daysOfWeek_cols);
     int hoursOfDay_handle = sqlite_query (database, "select * from hoursOfDay", hoursOfDay_cols);
     int minutesOfHour_handle = sqlite_query (database, "select * from minutesOfHour", minutesOfHour_cols);
+    int daysOfWeek_handle = sqlite_query (database, "select * from daysOfWeek", daysOfWeek_cols);
     
     while (sqlite_next_row (months_handle) == 1) {
         monthId = sqlite_get_col(months_handle, 0);
@@ -113,16 +112,7 @@ int start(){
         }
     }    
     sqlite_free_query (daysOfMonth_handle);
-    
-    while (sqlite_next_row (daysOfWeek_handle) == 1) {    
-        dayOfWeekId = sqlite_get_col(daysOfWeek_handle, 0);
-        dayOfWeekName = sqlite_get_col(daysOfWeek_handle, 1);        
-        if(Day() == dayOfWeekId){
-            break;
-        }
-    }    
-    sqlite_free_query (daysOfWeek_handle);
-    
+        
     while (sqlite_next_row (hoursOfDay_handle) == 1) {
         hourOfDayId = sqlite_get_col(hoursOfDay_handle, 0);
         hourOfDayName = sqlite_get_col(hoursOfDay_handle, 1);
@@ -140,6 +130,15 @@ int start(){
         }
     }    
     sqlite_free_query (minutesOfHour_handle);
+    
+    while (sqlite_next_row (daysOfWeek_handle) == 1) {    
+        dayOfWeekId = sqlite_get_col(daysOfWeek_handle, 0);
+        dayOfWeekName = sqlite_get_col(daysOfWeek_handle, 1);        
+        if(DayOfWeek() == dayOfWeekId){
+            break;
+        }
+    }    
+    sqlite_free_query (daysOfWeek_handle);
     
     static int lastBar=0;
     if(lastBar!=Bars){
@@ -187,13 +186,27 @@ int start(){
                     logger.Info(StringFormat("Date = %d",Day()));
 
                     if(DayOfWeek() == dayOfWeekId){
-                        logger.Info(StringFormat("Day of week = %d",DayOfWeek()));
+                        string dayOfWeek = "";
+                        
+                        if(dayOfWeekId == 1){
+                           dayOfWeek = "Monday";
+                        }else if(dayOfWeekId == 2){
+                           dayOfWeek = "Tuesday";
+                        }else if(dayOfWeekId == 3){
+                           dayOfWeek = "Wednesday";
+                        }else if(dayOfWeekId == 4){
+                           dayOfWeek = "Thursday";
+                        }else if(dayOfWeekId == 5){
+                           dayOfWeek = "Friday";
+                        }
+                        logger.Info(StringFormat("Day of week = %d",DayOfWeek()) + " (" + dayOfWeek + ")");
 
                         if(Hour() == hourOfDayId){
                             logger.Info(StringFormat("Hour of day = %d",Hour()));
 
                             if(Minute() == minuteOfHourId){
                                 logger.Info(StringFormat("Minute of Hour = %d",Minute()));
+                                
                                 
                             }else{
                                 logger.Error(StringFormat("Unable to determine the minute of hour. Error at line %d",

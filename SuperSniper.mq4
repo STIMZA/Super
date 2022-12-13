@@ -321,11 +321,13 @@ int GetTimeInSec(int month, int week, int day, int hour, int minute, int seconds
    }
    
    if(broker_GMT_type == United_States){
-      time_in_seconds = StrToTime(Year() + "." + Month() + "." + Day() + " " + (hour + broker_GMT_offset - dls) + ":" + minute + ":" + seconds);
+      time_in_seconds = StrToTime(Year() + "." + Month() + "." + Day() + " " + (hour + broker_GMT_offset - dls) +
+                                  ":" + minute + ":" + seconds);
    }else if(broker_GMT_type == United_Kingdom || broker_GMT_type == South_Africa ){
-      time_in_seconds = StrToTime(Year() + "." + Month() + "." + Day() + " " + (hour - broker_GMT_offset + dls) + ":" + minute + ":" + seconds);
+      time_in_seconds = StrToTime(Year() + "." + Month() + "." + Day() + " " + (hour - broker_GMT_offset + dls) + ":" +
+                                  minute + ":" + seconds);
    }
-           
+
    return time_in_seconds;
 }
 
@@ -394,17 +396,23 @@ int GetLastNumberOfCandles(int perimeter_id, string perimeter_description, int s
    int candles_lapsed = 0;
       
    if(period == PERIOD_M1){
-      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/60) - (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/60);
+      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/60) -
+                       (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/60);
    }else if(period == PERIOD_M5){
-      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/300) - (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/300);
+      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/300) -
+                       (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/300);
    }else if(period == PERIOD_M15){
-      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/900) - (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/900);
+      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/900) -
+                       (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/900);
    }else if(period == PERIOD_M30){
-      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/1800) - (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/1800);
+      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/1800) -
+                       (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/1800);
    }else if(period == PERIOD_H1){
-      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/3600) - (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/3600);
+      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/3600) -
+                       (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/3600);
    }else if(period == PERIOD_H4){
-      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/14400) - (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/14400);
+      candles_lapsed = (GetTimeInSec(Month(), start_week, start_day, Hour(), Minute(), Seconds())/14400) -
+                       (GetTimeInSec(Month(), start_week, start_day, start_hour, start_minute, start_seconds)/14400);
    }
    
    if(candles_lapsed < 0){
@@ -462,7 +470,8 @@ void DrawPerimeter(int perimeter_id, string perimeter_description, int start_tim
    logger.Trace("######### End draw perimeter #########");
     
    ObjectDelete(GenerateName(perimeter_id, perimeter_description));   
-   ObjectCreate(GenerateName(perimeter_id, perimeter_description), OBJ_RECTANGLE, 0, start_time, highest_price, end_time, lowest_price);
+   ObjectCreate(GenerateName(perimeter_id, perimeter_description), OBJ_RECTANGLE, 0, start_time, highest_price,
+                             end_time, lowest_price);
    ObjectSet(GenerateName(perimeter_id, perimeter_description), OBJPROP_COLOR, clr); 
    ObjectSet(GenerateName(perimeter_id, perimeter_description), OBJPROP_STYLE, style);    
    ObjectSet(GenerateName(perimeter_id, perimeter_description), OBJPROP_WIDTH, width);
@@ -470,11 +479,14 @@ void DrawPerimeter(int perimeter_id, string perimeter_description, int start_tim
    ObjectSet(GenerateName(perimeter_id, perimeter_description),OBJPROP_BACK,false);  
    
    if(perimeter_description == "session_"){
-      ObjectSet(GenerateName(perimeter_id, perimeter_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|OBJ_PERIOD_M15);
+      ObjectSet(GenerateName(perimeter_id, perimeter_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                             OBJ_PERIOD_M15);
    }else if(perimeter_description == "day_"){
-      ObjectSet(GenerateName(perimeter_id, perimeter_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4);
+      ObjectSet(GenerateName(perimeter_id, perimeter_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                             OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4);
    }else if(perimeter_description == "week_"){
-      ObjectSet(GenerateName(perimeter_id, perimeter_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4);
+      ObjectSet(GenerateName(perimeter_id, perimeter_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                             OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4);
    }else if(StringSubstr(perimeter_description, 0, 14) == "fifteen_minute"){
       ObjectSet(GenerateName(perimeter_id, perimeter_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1);
    }

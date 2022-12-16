@@ -1,6 +1,4 @@
 
-//PrintFormat("File path: %s\\Files\\",TerminalInfoString(TERMINAL_DATA_PATH));
-
 #include <sqlite.mqh>
 #include <ChartBeautify.mqh>
 #include <FileLog.mqh>
@@ -15,8 +13,7 @@ string chart_symbol = "";
 //######################################################################################################################
 
 int OnInit(){
-    
-    logger=new CFileLog("SSV2.log",TRACE,true);
+    logger = new CFileLog("SSV2_logs.log",TRACE,true);
     logger.Write("");
     logger.Trace("      ********************* Begin initialization of EA *********************");
     logger.Write("");

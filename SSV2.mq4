@@ -202,7 +202,7 @@ void TriggerComponent(int component_id, string component_description, int compon
                     style, end_time, highest_price, lowest_price);
    }else if(StrToTime(TimeCurrent()) > end_time){
       component_candles = GetNumberOfCandles(start_time, end_time, "past");
-      position = CalculatePastCandlePosition(end_time, start_time);
+      position = CalculatePastCandlePosition(end_time);
       highest_price = getHighestPrice(start_time, end_time, "past", component_candles, position);
       lowest_price = getLowestPrice(start_time, end_time, "past", component_candles, position);
       
@@ -322,7 +322,7 @@ double getLowestPrice(int start_time, int end_time, string context, int componen
 
 //######################################################################################################################
 
-int CalculatePastCandlePosition(int end_time, int start_time){
+int CalculatePastCandlePosition(int end_time){
    
    int candle_position = 0;
    

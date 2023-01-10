@@ -124,7 +124,9 @@ int start(){
       do_exec (database, "create table Component (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," +
                "description," + "start_month," + "start_week," + "start_day," + "start_hour," +
                "start_minute," + "start_seconds," + "clr," + "width," + "style," + "end_month," +
-               "end_week," + "end_day," + "end_hour," + "end_minute," + "end_seconds)");
+               "end_week," + "end_day," + "end_hour," + "end_minute," + "end_seconds," + "show_m1,"
+               + "show_m5," + "show_m15," + "show_m30," + "show_h1," + "show_h4," + "show_d1,"
+               + "show_w1," + "show_mn1)");
       logger.Write("    > Component table has been created.");
    }else{
       logger.Write("    > Component table already exists.");
@@ -144,7 +146,11 @@ int start(){
                        sqlite_get_col(component_handle, 10), sqlite_get_col(component_handle, 11),
                        sqlite_get_col(component_handle, 12), sqlite_get_col(component_handle, 13), 
                        sqlite_get_col(component_handle, 14), sqlite_get_col(component_handle, 15),
-                       sqlite_get_col(component_handle, 16));
+                       sqlite_get_col(component_handle, 16), sqlite_get_col(component_handle, 17),
+                       sqlite_get_col(component_handle, 18), sqlite_get_col(component_handle, 19),
+                       sqlite_get_col(component_handle, 20), sqlite_get_col(component_handle, 21),
+                       sqlite_get_col(component_handle, 22), sqlite_get_col(component_handle, 23),
+                       sqlite_get_col(component_handle, 24), sqlite_get_col(component_handle, 25));
       
    }   
    sqlite_free_query (component_handle);
@@ -176,7 +182,9 @@ void TriggerComponent(int component_id, string component_description, int compon
                       int component_start_week, int component_start_day, int component_start_hour, 
                       int component_start_minute, int component_start_seconds, int clr, int width, 
                       int style, int component_end_month, int component_end_week, int component_end_day, 
-                      int component_end_hour, int component_end_minute, int component_end_seconds){
+                      int component_end_hour, int component_end_minute, int component_end_seconds, string show_m1,
+                      string show_m5, string show_m15, string show_m30, string show_h1, string show_h4, string show_d1, 
+                      string show_w1, string show_mn1){
                       
    logger.Write("    > Triggering component : [" + GenerateName(component_id, component_description) + "]");
    
@@ -186,37 +194,9 @@ void TriggerComponent(int component_id, string component_description, int compon
    int end_time = GetTimeInSec(component_end_month, component_end_week, component_end_day, 
                                  component_end_hour, component_end_minute, component_end_seconds);   
    logger.Info("       - End time : " + end_time + " | " + TimeToStr(end_time));
-   
-   int component_candles = 0;
-   double highest_price = 0;
-   double lowest_price = 0;
-   int position = 0;
       
-   if(StrToTime(TimeCurrent()) >= start_time && StrToTime(TimeCurrent()) <= end_time){
-      component_candles = GetNumberOfCandles(start_time, end_time, "current");
-      highest_price = getHighestPrice(start_time, end_time, "current", component_candles, position);
-      lowest_price = getLowestPrice(start_time, end_time, "current", component_candles, position);
-      
-      logger.Write("3. Drawing Component...");
-      DrawComponent(component_id, component_description, start_time, clr, width, 
-                    style, end_time, highest_price, lowest_price);
-   }else if(StrToTime(TimeCurrent()) > end_time){
-      component_candles = GetNumberOfCandles(start_time, end_time, "past");
-      position = CalculatePastCandlePosition(end_time);
-      highest_price = getHighestPrice(start_time, end_time, "past", component_candles, position);
-      lowest_price = getLowestPrice(start_time, end_time, "past", component_candles, position);
-      
-      logger.Write("3. Drawing Component...");
-      DrawComponent(component_id, component_description, start_time, clr, width, 
-                    style, end_time, highest_price, lowest_price);
-   }else{
-      logger.Warning("Unable to determine the amount of candles contained in the component.");
-   }
-   logger.Write("    > Component calculations :");
-   logger.Info(StringFormat("       - Number of candles = %d", component_candles ));
-   logger.Info(StringFormat("       - If past component, candle position = %d", position));
-   logger.Info(StringFormat("       - Highest price = %f", highest_price));
-   logger.Info(StringFormat("       - Lowest price = %f", lowest_price));
+   ExecuteComponentTransaction(component_id, component_description, start_time, clr, width, style, end_time, show_m1, 
+                               show_m5, show_m15, show_m30, show_h1, show_h4, show_d1, show_w1, show_mn1);
 }
 
 //######################################################################################################################
@@ -343,8 +323,10 @@ int CalculatePastCandlePosition(int end_time){
 
 //######################################################################################################################
 
-void DrawComponent(int component_id, string component_description, int start_time, color clr, int width, int style, 
-                   int end_time, double highest_price, double lowest_price){
+void DrawComponent(int component_id, string component_description, int start_time, int clr, int width, int style, 
+                   int end_time, double highest_price, double lowest_price, string show_m1, string show_m5, 
+                   string show_m15, string show_m30, string show_h1, string show_h4, string show_d1, string show_w1, 
+                   string show_mn1){
     
    ObjectDelete(GenerateName(component_id, component_description));   
    ObjectCreate(GenerateName(component_id, component_description), OBJ_RECTANGLE, 0, start_time, highest_price,
@@ -356,18 +338,93 @@ void DrawComponent(int component_id, string component_description, int start_tim
    ObjectSet(GenerateName(component_id, component_description), OBJPROP_SELECTABLE, false);
    ObjectSet(GenerateName(component_id, component_description),OBJPROP_BACK,false);  
    
-   if(component_description == "session"){
-      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
-                             OBJ_PERIOD_M15);
-   }else if(component_description == "day"){
-      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
-                             OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4);
-   }else if(component_description == "week"){
-      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
-                             OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4);
-   }else if(StringSubstr(component_description, 0, 14) == "fifteen_minute"){
+   if(show_m1 == "true"){
       ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1);
+   }
+   
+   if(show_m1 == "true" && show_m5 == "true"){
+      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5);
+   }
+   
+   if(show_m1 == "true" && show_m5 == "true" && show_m15 == "true"){
+      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                OBJ_PERIOD_M15);
+   }
+   
+   if(show_m1 == "true" && show_m5 == "true" && show_m15 == "true" && show_m30 == "true"){
+      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                OBJ_PERIOD_M15|OBJ_PERIOD_M30);
+   }
+   
+   if(show_m1 == "true" && show_m5 == "true" && show_m15 == "true" && show_m30 == "true" && show_h1 == "true"){
+      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1);
+   }
+   
+   if(show_m1 == "true" && show_m5 == "true" && show_m15 == "true" && show_m30 == "true" && show_h1 == "true" &&
+      show_h4 == "true"){
+      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4);
+   }
+   
+   if(show_m1 == "true" && show_m5 == "true" && show_m15 == "true" && show_m30 == "true" && show_h1 == "true" &&
+      show_h4 == "true" && show_d1 == "true"){
+      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4|OBJ_PERIOD_D1);
+   }
+   
+   if(show_m1 == "true" && show_m5 == "true" && show_m15 == "true" && show_m30 == "true" && show_h1 == "true" &&
+      show_h4 == "true" && show_d1 == "true" && show_w1 == "true"){
+      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4|OBJ_PERIOD_D1|OBJ_PERIOD_W1);
+   }
+   
+   if(show_m1 == "true" && show_m5 == "true" && show_m15 == "true" && show_m30 == "true" && show_h1 == "true" &&
+      show_h4 == "true" && show_d1 == "true" && show_w1 == "true" && show_mn1 == "true"){
+      ObjectSet(GenerateName(component_id, component_description),OBJPROP_TIMEFRAMES,OBJ_PERIOD_M1|OBJ_PERIOD_M5|
+                OBJ_PERIOD_M15|OBJ_PERIOD_M30|OBJ_PERIOD_H1|OBJ_PERIOD_H4|OBJ_PERIOD_D1|OBJ_PERIOD_W1|
+                OBJ_PERIOD_MN1);
    }
 }
 
 //######################################################################################################################
+
+void ExecuteComponentTransaction(int component_id, string component_description, int start_time, int clr, int width, 
+                                 int style, int end_time, string show_m1, string show_m5, string show_m15, 
+                                 string show_m30, string show_h1, string show_h4, string show_d1, string show_w1, 
+                                 string show_mn1){
+   
+   int component_candles = 0;
+   double highest_price = 0;
+   double lowest_price = 0;
+   int position = 0;
+   
+   if(StrToTime(TimeCurrent()) >= start_time && StrToTime(TimeCurrent()) <= end_time){
+      component_candles = GetNumberOfCandles(start_time, end_time, "current");
+      highest_price = getHighestPrice(start_time, end_time, "current", component_candles, position);
+      lowest_price = getLowestPrice(start_time, end_time, "current", component_candles, position);
+      
+      logger.Write("3. Drawing Component...");
+      DrawComponent(component_id, component_description, start_time, clr, width, 
+                    style, end_time, highest_price, lowest_price, show_m1, show_m5, show_m15, show_m30, show_h1,
+                    show_h4, show_d1, show_w1, show_mn1);
+   }else if(StrToTime(TimeCurrent()) > end_time){
+      component_candles = GetNumberOfCandles(start_time, end_time, "past");
+      position = CalculatePastCandlePosition(end_time);
+      highest_price = getHighestPrice(start_time, end_time, "past", component_candles, position);
+      lowest_price = getLowestPrice(start_time, end_time, "past", component_candles, position);
+      
+      logger.Write("3. Drawing Component...");
+      DrawComponent(component_id, component_description, start_time, clr, width, 
+                    style, end_time, highest_price, lowest_price, show_m1, show_m5, show_m15, show_m30, show_h1,
+                    show_h4, show_d1, show_w1, show_mn1);
+   }else{
+      logger.Warning("Unable to determine the amount of candles contained in the component.");
+   }
+   logger.Write("    > Component calculations :");
+   logger.Info(StringFormat("       - Number of candles = %d", component_candles ));
+   logger.Info(StringFormat("       - If past component, candle position = %d", position));
+   logger.Info(StringFormat("       - Highest price = %f", highest_price));
+   logger.Info(StringFormat("       - Lowest price = %f", lowest_price));
+}
+

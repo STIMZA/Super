@@ -132,7 +132,7 @@ int start(){
       logger.Write("    > Component table already exists.");
    }
    
-   int component_cols[17];
+   int component_cols[25];
    
    int component_handle = sqlite_query (database, "select * from Component", component_cols);
    

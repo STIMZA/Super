@@ -6,7 +6,6 @@
 #property copyright "Richard Gunning"
 #property link      "https://rjgunning.com"
 #property version   "1.02"
-#property strict
 #include <Files/File.mqh>
 
 /*

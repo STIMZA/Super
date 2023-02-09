@@ -26,11 +26,11 @@ int OnInit(){
     logger.Write("");
     ChartBackColorSet(clrWhite);
     ChartForeColorSet(clrBlack);
-    ChartUpColorSet(clrBlack);
-    ChartDownColorSet(clrBlack);
+    ChartUpColorSet(clrBlue);
+    ChartDownColorSet(clrRed);
     ChartLineColorSet(clrBlack);
     ChartBullColorSet(clrWhite);
-    ChartBearColorSet(clrBlack);
+    ChartBearColorSet(clrWhite);
     ChartBidColorSet(clrDeepPink);
     ChartAskColorSet(clrBlue);
     ChartAutoscrollSet(true);

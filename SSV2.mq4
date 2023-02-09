@@ -13,17 +13,17 @@ string chart_symbol = "";
 //######################################################################################################################
 
 int OnInit(){
-    //logger = new CFileLog("SSV2_logs.log",TRACE,true);
-    //logger.Write("");
-    //logger.Trace("      ********************* Begin initialization of EA *********************");
-    //logger.Write("");
-    //logger.Write("               #####################################################");
-    //logger.Write("               #   SSV2 EA Copyright \x00A9 2022, all rights reserved   #");    
-    //logger.Write("               #    https://www.mql5.com/en/users/matimungoveni    #");
-    //logger.Write("               #       Developer : matimu.romeo@outlook.com        #");
-    //logger.Write("               #           A product of @SifuPriceAction           #");    
-    //logger.Write("               #####################################################");
-    //logger.Write("");
+    logger = new CFileLog("SSV2_logs.log",TRACE,true);
+    logger.Write("");
+    logger.Trace("      ********************* Begin initialization of EA *********************");
+    logger.Write("");
+    logger.Write("               #####################################################");
+    logger.Write("               #   SSV2 EA Copyright \x00A9 2022, all rights reserved   #");    
+    logger.Write("               #    https://www.mql5.com/en/users/matimungoveni    #");
+    logger.Write("               #       Developer : matimu.romeo@outlook.com        #");
+    logger.Write("               #           A product of @SifuPriceAction           #");    
+    logger.Write("               #####################################################");
+    logger.Write("");
     ChartBackColorSet(clrWhite);
     ChartForeColorSet(clrBlack);
     ChartUpColorSet(clrBlack);
@@ -44,18 +44,18 @@ int OnInit(){
     if (!sqlite_init()) {
         return INIT_FAILED;
     }
-    //logger.Write("");
-    //logger.Write("");
-    //logger.Trace("      *********************  End initialization of EA  *********************");
-    //logger.Write("");
-    //logger.Write("");
+    logger.Write("");
+    logger.Write("");
+    logger.Trace("      *********************  End initialization of EA  *********************");
+    logger.Write("");
+    logger.Write("");
     return INIT_SUCCEEDED;
 }
 
 //######################################################################################################################
 
 void OnDeinit(const int reason){
-    //logger.Info(StringFormat("DeInitialising %d",reason));
+    logger.Info(StringFormat("DeInitialising %d",reason));
     delete logger;
     sqlite_finalize();
 }
@@ -107,19 +107,24 @@ int start(){
    }
    
    static int lastBar=0;
+   
    if(lastBar!=Bars){
-      //logger.Trace("----------- Begin per/bar information -----------");
-      chart_symbol = _Symbol;     
-      //logger.Info(StringFormat("Symbol = %s", chart_symbol));
-      historical_candles = Bars;     
-      //logger.Info(StringFormat("Historical bars = %d", historical_candles));  
-      //logger.Info(StringFormat("TimeFrame = %s", timeFrame));     
-      //logger.Trace("-----------  End per/bar information  -----------");
-      //logger.Write("");
+      
+      chart_symbol = _Symbol;
+      historical_candles = Bars; 
       lastBar=Bars;
+      
+      logger.Trace("----------- Begin per/bar information -----------"); 
+            
+      logger.Info(StringFormat("Symbol = %s", chart_symbol));      
+      logger.Info(StringFormat("TimeFrame = %s", timeFrame));     
+      logger.Info(StringFormat("Historical bars = %d", historical_candles));  
+        
+      logger.Trace("-----------  End per/bar information  -----------");
+      logger.Write("");      
    }
-   //logger.Trace("______________________________________ TICK ______________________________________");           
-   //logger.Write("1. Checking if Component table exists in the database.");
+   logger.Trace("______________________________________ TICK ______________________________________");           
+   logger.Write("1. Checking if Component table exists in the database.");
    if (!do_check_table_exists (database, "Component")) {
       do_exec (database, "create table Component (" + "id integer NOT NULL PRIMARY KEY AUTOINCREMENT," +
                "description," + "start_month," + "start_week," + "start_day," + "start_hour," +
@@ -127,9 +132,9 @@ int start(){
                "end_week," + "end_day," + "end_hour," + "end_minute," + "end_seconds," + "show_m1,"
                + "show_m5," + "show_m15," + "show_m30," + "show_h1," + "show_h4," + "show_d1,"
                + "show_w1," + "show_mn1)");
-      //logger.Write("    > Component table has been created.");
+      logger.Write("    > Component table has been created.");
    }else{
-      //logger.Write("    > Component table already exists.");
+      logger.Write("    > Component table already exists.");
    }
    
    int component_cols[25];
@@ -137,7 +142,7 @@ int start(){
    int component_handle = sqlite_query (database, "select * from Component", component_cols);
    
    while (sqlite_next_row (component_handle) == 1) {
-      //logger.Write("2. Reading Component table..."); 
+      logger.Write("2. Reading Component table..."); 
       TriggerComponent(sqlite_get_col(component_handle, 0), sqlite_get_col(component_handle, 1), 
                        sqlite_get_col(component_handle, 2), sqlite_get_col(component_handle, 3),
                        sqlite_get_col(component_handle, 4), sqlite_get_col(component_handle, 5), 
@@ -155,8 +160,8 @@ int start(){
    }   
    sqlite_free_query (component_handle);
          
-   //logger.Trace("__________________________________________________________________________________");
-   //logger.Write("");   
+   logger.Trace("__________________________________________________________________________________");
+   logger.Write("");   
    return 0;
 }
 
@@ -186,14 +191,14 @@ void TriggerComponent(int component_id, string component_description, int compon
                       string show_m5, string show_m15, string show_m30, string show_h1, string show_h4, string show_d1, 
                       string show_w1, string show_mn1){
                       
-   //logger.Write("    > Triggering component : [" + GenerateName(component_id, component_description) + "]");
+   logger.Write("    > Triggering component : [" + GenerateName(component_id, component_description) + "]");
    
    int start_time = GetTimeInSec(component_start_month, component_start_week, component_start_day, 
                                  component_start_hour, component_start_minute, component_start_seconds);
-   //logger.Info("       - Start time : " + start_time + " | " + TimeToStr(start_time));
+   logger.Info("       - Start time : " + start_time + " | " + TimeToStr(start_time));
    int end_time = GetTimeInSec(component_end_month, component_end_week, component_end_day, 
                                  component_end_hour, component_end_minute, component_end_seconds);   
-   //logger.Info("       - End time : " + end_time + " | " + TimeToStr(end_time));
+   logger.Info("       - End time : " + end_time + " | " + TimeToStr(end_time));
       
    ExecuteComponentTransaction(component_id, component_description, start_time, clr, width, style, end_time, show_m1, 
                                show_m5, show_m15, show_m30, show_h1, show_h4, show_d1, show_w1, show_mn1);
@@ -201,25 +206,20 @@ void TriggerComponent(int component_id, string component_description, int compon
 
 //######################################################################################################################
 
-int GetTimeInSec(int month, int week, int day, int hour, int minutes, int seconds){
-   
-   double time_in_seconds = 0;
-   
+int GetTimeInSec(int month, int week, int day, int hour, int minutes, int seconds){   
+   double time_in_seconds = 0;   
    int day_of_month = 0;
-   int month_of_year = 0;
-   
+   int month_of_year = 0;   
    if(day == 0){
       day_of_month = Day();
    }else{
    
-   }
-   
+   }   
    if(month == 0){
       month_of_year = Month();
    }else{
    
-   }
-   
+   }   
    time_in_seconds = StrToTime(Year() + "." + month_of_year + "." + day_of_month + " " + hour + ":" + minutes + 
                                ":" + seconds);
 
@@ -228,46 +228,10 @@ int GetTimeInSec(int month, int week, int day, int hour, int minutes, int second
 
 //######################################################################################################################
 
-int GetNumberOfCandles(int start_time, int end_time, string context){
-   
-   ENUM_TIMEFRAMES period = ChartPeriod(0);
-   
-   int candles_lapsed = 0;
-   if(context == "current"){
-      if(period == PERIOD_M1){
-         candles_lapsed = (start_time/60) - (StringToTime(TimeToString(TimeCurrent()))/60);
-      }else if(period == PERIOD_M5){
-         candles_lapsed = (start_time/300) - (StringToTime(TimeToString(TimeCurrent()))/300);
-      }else if(period == PERIOD_M15){
-         candles_lapsed = (start_time/900) - (StringToTime(TimeToString(TimeCurrent()))/900);
-      }else if(period == PERIOD_M30){
-         candles_lapsed = (start_time/1800) - (StringToTime(TimeToString(TimeCurrent()))/1800);
-      }else if(period == PERIOD_H1){
-         candles_lapsed = (start_time/3600) - (StringToTime(TimeToString(TimeCurrent()))/3600);
-      }else if(period == PERIOD_H4){
-         candles_lapsed = (start_time/14400) - (StringToTime(TimeToString(TimeCurrent()))/14400);
-      }
-   }else if(context == "past"){
-      if(period == PERIOD_M1){
-         candles_lapsed = (start_time/60) - (end_time/60);
-      }else if(period == PERIOD_M5){
-         candles_lapsed = (start_time/300) - (end_time/300);
-      }else if(period == PERIOD_M15){
-         candles_lapsed = (start_time/900) - (end_time/900);
-      }else if(period == PERIOD_M30){
-         candles_lapsed = (start_time/1800) - (end_time/1800);
-      }else if(period == PERIOD_H1){
-         candles_lapsed = (start_time/3600) - (end_time/3600);
-      }else if(period == PERIOD_H4){
-         candles_lapsed = (start_time/14400) - (end_time/14400);
-      }
-   }
-      
-   if(candles_lapsed < 0){
-      candles_lapsed = candles_lapsed * (-1);
-   }
-   
-   return candles_lapsed;
+int GetNumberOfCandles(int start_time, int end_time, ENUM_TIMEFRAMES period){   
+   int candles = 0;   
+   candles = Bars(_Symbol, period, start_time, end_time);   
+   return candles;
 }
 
 //######################################################################################################################
@@ -278,10 +242,8 @@ double getHighestPrice(int start_time, int end_time, string context, int compone
       highest_candle = iHighest(_Symbol, _Period, MODE_HIGH, component_candles, position);
    }else if(context == "current"){
       highest_candle = iHighest(_Symbol, _Period, MODE_HIGH, component_candles, 0);
-   }
-            
-   double highest_price = High[highest_candle]; 
-   
+   }            
+   double highest_price = High[highest_candle];   
    return highest_price;  
 }
 
@@ -293,10 +255,8 @@ double getLowestPrice(int start_time, int end_time, string context, int componen
       lowest_candle = iLowest(_Symbol, _Period, MODE_LOW, component_candles, position);
    }else if(context == "current"){
       lowest_candle = iLowest(_Symbol, _Period, MODE_LOW, component_candles, 0);
-   }
-      
-   double lowest_price = Low[lowest_candle];
-   
+   }      
+   double lowest_price = Low[lowest_candle];   
    return lowest_price;
 }
 
@@ -400,7 +360,7 @@ void ExecuteComponentTransaction(int component_id, string component_description,
    int position = 0;
    
    if(StrToTime(TimeCurrent()) >= start_time && StrToTime(TimeCurrent()) <= end_time){
-      component_candles = GetNumberOfCandles(start_time, end_time, "current");
+      component_candles = GetNumberOfCandles(start_time, end_time, ChartPeriod(0));
       highest_price = getHighestPrice(start_time, end_time, "current", component_candles, position);
       lowest_price = getLowestPrice(start_time, end_time, "current", component_candles, position);
       
@@ -409,7 +369,7 @@ void ExecuteComponentTransaction(int component_id, string component_description,
                     style, end_time, highest_price, lowest_price, show_m1, show_m5, show_m15, show_m30, show_h1,
                     show_h4, show_d1, show_w1, show_mn1);
    }else if(StrToTime(TimeCurrent()) > end_time){
-      component_candles = GetNumberOfCandles(start_time, end_time, "past");
+      component_candles = GetNumberOfCandles(start_time, end_time, ChartPeriod(0));
       position = CalculatePastCandlePosition(end_time);
       highest_price = getHighestPrice(start_time, end_time, "past", component_candles, position);
       lowest_price = getLowestPrice(start_time, end_time, "past", component_candles, position);
@@ -421,10 +381,10 @@ void ExecuteComponentTransaction(int component_id, string component_description,
    }else{
       //logger.Warning("Unable to determine the amount of candles contained in the component.");
    }
-   //logger.Write("    > Component calculations :");
-   //logger.Info(StringFormat("       - Number of candles = %d", component_candles ));
-   //logger.Info(StringFormat("       - If past component, candle position = %d", position));
-   //logger.Info(StringFormat("       - Highest price = %f", highest_price));
-   //logger.Info(StringFormat("       - Lowest price = %f", lowest_price));
+   logger.Write("    > Component calculations :");
+   logger.Info(StringFormat("       - Number of candles = %d", component_candles ));
+   logger.Info(StringFormat("       - If past component, candle position = %d", position));
+   logger.Info(StringFormat("       - Highest price = %f", highest_price));
+   logger.Info(StringFormat("       - Lowest price = %f", lowest_price));
 }
 
